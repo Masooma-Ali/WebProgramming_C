@@ -1,0 +1,117 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6dff0;
+}
+
+.header {
+  background: #e39acb;
+  padding: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.logo {
+  height: 50px;
+}
+
+.header h1 {
+  color: #5b004f;
+  margin: 0;
+}
+
+.topnav {
+  background: #5b004f;
+  text-align: center;
+}
+
+.topnav a {
+  display: inline-block;
+  color: white;
+  padding: 14px 20px;
+  text-decoration: none;
+}
+
+.topnav a:hover {
+  background: #e39acb;
+  color: black;
+}
+
+.section {
+  padding: 70px 20px;
+  text-align: center;
+}
+
+.welcome {
+  background: linear-gradient(#f6dff0, #e39acb);
+}
+
+.welcome h2 {
+  font-size: 32px;
+}
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+
+.gallery img {
+  width: 200px;
+  height: 260px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.form-box {
+  background: white;
+  max-width: 320px;
+  margin: auto;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  background: #5b004f;
+  color: white;
+  border-radius: 6px;
+}
+
+button:hover {
+  background: #e39acb;
+  color: black;
+}
+
+footer {
+  background: #5b004f;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
