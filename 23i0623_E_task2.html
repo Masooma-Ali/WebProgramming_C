@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smooth Moving Box</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #box {
+            width: 50px;
+            height: 50px;
+            background-color: dodgerblue;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="box"></div>
+
+<div class="controls">
+    <button onclick="start()">Start</button>
+</div>
+
+<script>
+    const box = document.getElementById("box");
+
+    let animating = false;
+    let targetX = 0;
+    let targetY = 0;
+
+    function randomTarget() {
+        targetX = Math.random() * (window.innerWidth - 50);
+        targetY = Math.random() * (window.innerHeight - 50);
+    }
+
+    function moveSmooth() {
+        if (!animating) return;
+
+        const currentX = box.offsetLeft;
+        const currentY = box.offsetTop;
+
+        const dx = targetX - currentX;
+        const dy = targetY - currentY;
+
+        const speed = 2;
+
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+            randomTarget();
+        } else {
+            box.style.left = currentX + dx * 0.05 + "px";
+            box.style.top = currentY + dy * 0.05 + "px";
+        }
+
+        requestAnimationFrame(moveSmooth);
+    }
+
+
+    function start() {
+    animating = true;
+    box.style.transform = "none";
+    randomTarget();
+    moveSmooth();
+}
+
+
+  
+</script>
+
+</body>
+</html>
