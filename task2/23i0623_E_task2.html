@@ -1,90 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Smooth Moving Box</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
+<meta charset="UTF-8">
+<title>Shooting Game</title>
 
-        #box {
-            width: 50px;
-            height: 50px;
-            background-color: dodgerblue;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+    }
 
-        .controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
+    #box {
+        width: 50px;
+        height: 50px;
+        background-color: dodgerblue;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-    </style>
+    #target {
+        width: 40px;
+        height: 40px;
+        background-color: crimson;
+        border-radius: 50%;
+        position: absolute;
+        right: 30px;
+        top: 100px;
+    }
+
+    .bullet {
+        width: 10px;
+        height: 5px;
+        background: black;
+        position: absolute;
+    }
+
+    .controls {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .info {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        font-size: 18px;
+    }
+</style>
 </head>
+
 <body>
 
+<div class="info">
+    Score: <span id="score">0</span> |
+    Time: <span id="time">30</span>s
+</div>
+
 <div id="box"></div>
+<div id="target"></div>
 
 <div class="controls">
-    <button onclick="start()">Start</button>
+    <button onclick="startGame()">Start</button>
+    <button onclick="shoot()">Shoot</button>
 </div>
 
 <script>
-    const box = document.getElementById("box");
+const box = document.getElementById("box");
+const target = document.getElementById("target");
+const scoreEl = document.getElementById("score");
+const timeEl = document.getElementById("time");
 
-    let animating = false;
-    let targetX = 0;
-    let targetY = 0;
+let animating = false;
+let targetX = 0;
+let targetY = 0;
 
-    function randomTarget() {
-        targetX = Math.random() * (window.innerWidth - 50);
-        targetY = Math.random() * (window.innerHeight - 50);
+let score = 0;
+let timeLeft = 30;
+let timerInterval;
+
+let targetDir = 1;
+
+// ---------------- BOX MOVEMENT ----------------
+function randomTarget() {
+    targetX = Math.random() * (window.innerWidth - 50);
+    targetY = Math.random() * (window.innerHeight - 50);
+}
+
+function moveSmooth() {
+    if (!animating) return;
+
+    const currentX = box.offsetLeft;
+    const currentY = box.offsetTop;
+
+    const dx = targetX - currentX;
+    const dy = targetY - currentY;
+
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+        randomTarget();
+    } else {
+        box.style.left = currentX + dx * 0.05 + "px";
+        box.style.top = currentY + dy * 0.05 + "px";
     }
 
-    function moveSmooth() {
-        if (!animating) return;
+    requestAnimationFrame(moveSmooth);
+}
 
-        const currentX = box.offsetLeft;
-        const currentY = box.offsetTop;
+// ---------------- TARGET MOVEMENT ----------------
+function moveTarget() {
+    const y = target.offsetTop;
+    if (y <= 20 || y >= window.innerHeight - 60) {
+        targetDir *= -1;
+    }
+    target.style.top = y + targetDir * 3 + "px";
+    requestAnimationFrame(moveTarget);
+}
 
-        const dx = targetX - currentX;
-        const dy = targetY - currentY;
+// ---------------- SHOOTING ----------------
+function shoot() {
+    if (!animating) return;
 
-        const speed = 2;
+    const bullet = document.createElement("div");
+    bullet.className = "bullet";
 
-        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
-            randomTarget();
-        } else {
-            box.style.left = currentX + dx * 0.05 + "px";
-            box.style.top = currentY + dy * 0.05 + "px";
+    bullet.style.left = box.offsetLeft + 50 + "px";
+    bullet.style.top = box.offsetTop + 22 + "px";
+
+    document.body.appendChild(bullet);
+
+    const interval = setInterval(() => {
+        bullet.style.left = bullet.offsetLeft + 8 + "px";
+
+        if (isHit(bullet, target)) {
+            score++;
+            scoreEl.textContent = score;
+            bullet.remove();
+            clearInterval(interval);
         }
 
-        requestAnimationFrame(moveSmooth);
-    }
+        if (bullet.offsetLeft > window.innerWidth) {
+            bullet.remove();
+            clearInterval(interval);
+        }
+    }, 16);
+}
 
+function isHit(bullet, target) {
+    const b = bullet.getBoundingClientRect();
+    const t = target.getBoundingClientRect();
 
-    function start() {
+    return !(
+        b.right < t.left ||
+        b.left > t.right ||
+        b.bottom < t.top ||
+        b.top > t.bottom
+    );
+}
+
+// ---------------- TIMER ----------------
+function startTimer() {
+    timeLeft = 30;
+    timeEl.textContent = timeLeft;
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timeEl.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            resetGame();
+        }
+    }, 1000);
+}
+
+// ---------------- GAME CONTROL ----------------
+function startGame() {
     animating = true;
+    score = 0;
+    scoreEl.textContent = score;
     box.style.transform = "none";
     randomTarget();
     moveSmooth();
+    moveTarget();
+    clearInterval(timerInterval);
+    startTimer();
 }
 
-
-  
+function resetGame() {
+    animating = false;
+    clearInterval(timerInterval);
+    alert("Time's up! Your score: " + score);
+    score = 0;
+    scoreEl.textContent = score;
+    timeEl.textContent = 30;
+}
 </script>
 
 </body>
