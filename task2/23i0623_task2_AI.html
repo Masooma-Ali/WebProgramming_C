@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archery Game - Hit the Moving Target!</title>
+    <style>
+        /* Global Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Main Game Container */
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 90%;
+        }
+
+        /* Game Title */
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Score and Timer Display */
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+
+        .score, .timer {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Game Area - Where the Action Happens */
+        .game-area {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8C8 100%);
+            border: 5px solid #333;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            cursor: crosshair;
+        }
+
+        /* Bow (Shooter Position) */
+        .bow {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(to right, #8B4513, #A0522D);
+            border: 3px solid #654321;
+            border-radius: 10px;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Bow String Visual */
+        .bow::before {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 100%;
+            background: #333;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Arrow */
+        .arrow {
+            width: 8px;
+            height: 50px;
+            background: linear-gradient(to bottom, #FFD700 0%, #FFA500 20%, #8B4513 20%, #8B4513 100%);
+            border-radius: 4px;
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            display: none; /* Hidden until fired */
+        }
+
+        /* Arrow Tip */
+        .arrow::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 15px solid #FFD700;
+        }
+
+        /* Target (Moving Element) */
+        .target {
+            width: 80px;
+            height: 80px;
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        /* Target Rings (Bullseye Design) */
+        .target-ring {
+            position: absolute;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .target-ring-1 {
+            width: 100%;
+            height: 100%;
+            background: #ff4444;
+        }
+
+        .target-ring-2 {
+            width: 75%;
+            height: 75%;
+            background: #ffaa44;
+        }
+
+        .target-ring-3 {
+            width: 50%;
+            height: 50%;
+            background: #ffff44;
+        }
+
+        .target-ring-4 {
+            width: 25%;
+            height: 25%;
+            background: #44ff44;
+        }
+
+        /* Control Buttons */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Game Over Message */
+        .game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-over-score {
+            color: #FFD700;
+            font-size: 1.5em;
+            margin-top: 15px;
+        }
+
+        /* Instructions */
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        /* Difficulty Indicator */
+        .difficulty {
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: #764ba2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🏹 Archery Challenge 🎯</h1>
+        
+        <!-- Score and Timer Display -->
+        <div class="game-info">
+            <div class="score">Score: <span id="score-display">0</span></div>
+            <div class="timer">Time: <span id="timer-display">60</span>s</div>
+        </div>
+
+        <!-- Difficulty Indicator -->
+        <div class="difficulty">Difficulty: <span id="difficulty-level">Easy</span></div>
+
+        <!-- Main Game Area -->
+        <div class="game-area" id="game-area">
+            <!-- Bow (Shooter) -->
+            <div class="bow" id="bow"></div>
+            
+            <!-- Arrow (Created dynamically) -->
+            <div class="arrow" id="arrow"></div>
+            
+            <!-- Moving Target -->
+            <div class="target" id="target">
+                <div class="target-ring target-ring-1"></div>
+                <div class="target-ring target-ring-2"></div>
+                <div class="target-ring target-ring-3"></div>
+                <div class="target-ring target-ring-4"></div>
+            </div>
+
+            <!-- Game Over Message -->
+            <div class="game-over" id="game-over">
+                <div>GAME OVER!</div>
+                <div class="game-over-score">Final Score: <span id="final-score">0</span></div>
+            </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="controls">
+            <button id="shoot-btn">🏹 Shoot Arrow</button>
+            <button id="restart-btn">🔄 Restart Game</button>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <strong>How to Play:</strong><br>
+            • Click "Shoot Arrow" or press SPACE to fire<br>
+            • Hit the moving target to score points<br>
+            • Difficulty increases as you score more points<br>
+            • You have 60 seconds - Good luck!
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // GAME STATE VARIABLES
+        // ==========================================
+        
+        // Score tracking
+        let score = 0;
+        
+        // Timer tracking (in seconds)
+        let timeLeft = 60;
+        
+        // Game state flag
+        let gameOver = false;
+        
+        // Arrow firing state
+        let arrowInFlight = false;
+        
+        // Target movement variables
+        let targetX = 100; // Current X position
+        let targetY = 50;  // Current Y position
+        let targetSpeedX = 2; // Horizontal speed
+        let targetSpeedY = 1.5; // Vertical speed
+        
+        // Difficulty settings
+        let currentDifficulty = 'Easy';
+        let targetSize = 80; // Initial target size in pixels
+        
+        // Animation frame ID for smooth movement
+        let targetAnimationId;
+        
+        // Timer interval ID
+        let timerIntervalId;
+
+        // ==========================================
+        // DOM ELEMENT REFERENCES
+        // ==========================================
+        
+        const gameArea = document.getElementById('game-area');
+        const target = document.getElementById('target');
+        const arrow = document.getElementById('arrow');
+        const bow = document.getElementById('bow');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerDisplay = document.getElementById('timer-display');
+        const gameOverMessage = document.getElementById('game-over');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const shootButton = document.getElementById('shoot-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const difficultyDisplay = document.getElementById('difficulty-level');
+
+        // ==========================================
+        // INITIALIZATION FUNCTION
+        // ==========================================
+        
+        /**
+         * Initializes the game when the page loads
+         * Sets up event listeners and starts the game
+         */
+        function initializeGame() {
+            // Set initial target position to center
+            targetX = gameArea.offsetWidth / 2 - targetSize / 2;
+            targetY = gameArea.offsetHeight / 2 - targetSize / 2;
+            updateTargetPosition();
+            
+            // Start target movement
+            moveTarget();
+            
+            // Start countdown timer
+            startTimer();
+            
+            // Set up event listeners
+            setupEventListeners();
+        }
+
+        // ==========================================
+        // EVENT LISTENERS SETUP
+        // ==========================================
+        
+        /**
+         * Sets up all event listeners for game controls
+         */
+        function setupEventListeners() {
+            // Shoot button click
+            shootButton.addEventListener('click', shootArrow);
+            
+            // Restart button click
+            restartButton.addEventListener('click', restartGame);
+            
+            // Keyboard controls (SPACE key to shoot)
+            document.addEventListener('keydown', handleKeyPress);
+            
+            // Click on game area to shoot
+            gameArea.addEventListener('click', handleGameAreaClick);
+        }
+
+        // ==========================================
+        // KEYBOARD EVENT HANDLER
+        // ==========================================
+        
+        /**
+         * Handles keyboard input
+         * @param {KeyboardEvent} event - The keyboard event object
+         */
+        function handleKeyPress(event) {
+            // Check if SPACE key is pressed (keyCode 32 or key ' ')
+            if (event.key === ' ' || event.keyCode === 32) {
+                event.preventDefault(); // Prevent page scroll
+                shootArrow();
+            }
+        }
+
+        // ==========================================
+        // GAME AREA CLICK HANDLER
+        // ==========================================
+        
+        /**
+         * Handles clicks on the game area
+         * Distinguishes between target clicks and background clicks
+         * @param {MouseEvent} event - The mouse event object
+         */
+        function handleGameAreaClick(event) {
+            // Check if the click was on the target
+            if (event.target === target || target.contains(event.target)) {
+                // Target was clicked - shoot arrow
+                shootArrow();
+            } else if (event.target === gameArea) {
+                // Background was clicked - also shoot arrow
+                shootArrow();
+            }
+            
+            // Prevent event bubbling
+            event.stopPropagation();
+        }
+
+        // ==========================================
+        // TARGET MOVEMENT FUNCTION
+        // ==========================================
+        
+        /**
+         * Moves the target continuously within the game area
+         * Uses requestAnimationFrame for smooth animation
+         */
+        function moveTarget() {
+            // Only move if game is not over
+            if (gameOver) {
+                return;
+            }
+            
+            // Get game area dimensions
+            const gameAreaWidth = gameArea.offsetWidth;
+            const gameAreaHeight = gameArea.offsetHeight;
+            
+            // Update target position
+            targetX += targetSpeedX;
+            targetY += targetSpeedY;
+            
+            // Bounce off left and right walls
+            if (targetX <= 0 || targetX >= gameAreaWidth - targetSize) {
+                targetSpeedX *= -1; // Reverse horizontal direction
+                targetX = Math.max(0, Math.min(targetX, gameAreaWidth - targetSize));
+            }
+            
+            // Bounce off top and bottom walls
+            if (targetY <= 0 || targetY >= gameAreaHeight - targetSize) {
+                targetSpeedY *= -1; // Reverse vertical direction
+                targetY = Math.max(0, Math.min(targetY, gameAreaHeight - targetSize));
+            }
+            
+            // Apply new position to target
+            updateTargetPosition();
+            
+            // Continue animation loop
+            targetAnimationId = requestAnimationFrame(moveTarget);
+        }
+
+        // ==========================================
+        // UPDATE TARGET POSITION
+        // ==========================================
+        
+        /**
+         * Updates the target's DOM position and size
+         */
+        function updateTargetPosition() {
+            target.style.left = targetX + 'px';
+            target.style.top = targetY + 'px';
+            target.style.width = targetSize + 'px';
+            target.style.height = targetSize + 'px';
+        }
+
+        // ==========================================
+        // SHOOT ARROW FUNCTION
+        // ==========================================
+        
+        /**
+         * Fires an arrow toward the target
+         * Handles arrow animation and collision detection
+         */
+        function shootArrow() {
+            // Don't shoot if game is over or arrow is already in flight
+            if (gameOver || arrowInFlight) {
+                return;
+            }
+            
+            // Mark arrow as in flight
+            arrowInFlight = true;
+            
+            // Show the arrow
+            arrow.style.display = 'block';
+            
+            // Reset arrow position to bow position
+            const bowLeft = bow.offsetLeft;
+            const arrowStartBottom = 100; // Starting bottom position
+            arrow.style.left = (bowLeft + 26) + 'px'; // Center on bow
+            arrow.style.bottom = arrowStartBottom + 'px';
+            
+            // Animate arrow moving upward
+            animateArrow();
+        }
+
+        // ==========================================
+        // ARROW ANIMATION FUNCTION
+        // ==========================================
+        
+        /**
+         * Animates the arrow moving upward
+         * Checks for collision with target during flight
+         */
+        function animateArrow() {
+            const arrowSpeed = 5; // Pixels per frame
+            let currentBottom = parseInt(arrow.style.bottom);
+            
+            // Animation interval
+            const arrowInterval = setInterval(() => {
+                // Move arrow upward
+                currentBottom += arrowSpeed;
+                arrow.style.bottom = currentBottom + 'px';
+                
+                // Check if arrow reached top of game area
+                if (currentBottom >= gameArea.offsetHeight) {
+                    // Arrow missed - reset
+                    clearInterval(arrowInterval);
+                    resetArrow();
+                    return;
+                }
+                
+                // Check for collision with target
+                if (checkCollision()) {
+                    // Hit detected!
+                    clearInterval(arrowInterval);
+                    handleHit();
+                }
+            }, 20); // Run every 20ms for smooth animation
+        }
+
+        // ==========================================
+        // COLLISION DETECTION FUNCTION
+        // ==========================================
+        
+        /**
+         * Checks if the arrow has collided with the target
+         * @returns {boolean} True if collision detected, false otherwise
+         */
+        function checkCollision() {
+            // Get arrow position and dimensions
+            const arrowRect = arrow.getBoundingClientRect();
+            
+            // Get target position and dimensions
+            const targetRect = target.getBoundingClientRect();
+            
+            // Check for overlap (collision)
+            const collision = !(
+                arrowRect.right < targetRect.left ||
+                arrowRect.left > targetRect.right ||
+                arrowRect.bottom < targetRect.top ||
+                arrowRect.top > targetRect.bottom
+            );
+            
+            return collision;
+        }
+
+        // ==========================================
+        // HANDLE HIT FUNCTION
+        // ==========================================
+        
+        /**
+         * Handles what happens when arrow hits the target
+         * Updates score and increases difficulty
+         */
+        function handleHit() {
+            // Update score
+            updateScore();
+            
+            // Visual feedback - make target flash
+            target.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                target.style.transform = 'scale(1)';
+            }, 200);
+            
+            // Reset arrow
+            resetArrow();
+            
+            // Increase difficulty based on score
+            increaseDifficulty();
+        }
+
+        // ==========================================
+        // UPDATE SCORE FUNCTION
+        // ==========================================
+        
+        /**
+         * Increases the score by 10 points and updates display
+         */
+        function updateScore() {
+            score += 10;
+            scoreDisplay.textContent = score;
+        }
+
+        // ==========================================
+        // RESET ARROW FUNCTION
+        // ==========================================
+        
+        /**
+         * Resets the arrow to initial position and hides it
+         */
+        function resetArrow() {
+            arrow.style.display = 'none';
+            arrowInFlight = false;
+        }
+
+        // ==========================================
+        // TIMER FUNCTIONS
+        // ==========================================
+        
+        /**
+         * Starts the countdown timer
+         * Decreases time every second
+         */
+        function startTimer() {
+            timerIntervalId = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                // Check if time is up
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000); // Run every 1000ms (1 second)
+        }
+
+        /**
+         * Updates the timer display
+         */
+        function updateTimerDisplay() {
+            timerDisplay.textContent = timeLeft;
+            
+            // Change color when time is running low
+            if (timeLeft <= 10) {
+                timerDisplay.parentElement.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%)';
+            }
+        }
+
+        // ==========================================
+        // DIFFICULTY SYSTEM
+        // ==========================================
+        
+        /**
+         * Increases game difficulty based on current score
+         * Makes target move faster and/or smaller
+         */
+        function increaseDifficulty() {
+            // Increase speed every 30 points
+            if (score > 0 && score % 30 === 0) {
+                targetSpeedX *= 1.2;
+                targetSpeedY *= 1.2;
+            }
+            
+            // Decrease target size every 50 points (minimum 40px)
+            if (score > 0 && score % 50 === 0 && targetSize > 40) {
+                targetSize -= 10;
+                updateTargetPosition();
+            }
+            
+            // Update difficulty level display
+            updateDifficultyDisplay();
+        }
+
+        /**
+         * Updates the difficulty level display based on score
+         */
+        function updateDifficultyDisplay() {
+            if (score < 50) {
+                currentDifficulty = 'Easy';
+                difficultyDisplay.style.color = '#2ecc71';
+            } else if (score < 100) {
+                currentDifficulty = 'Medium';
+                difficultyDisplay.style.color = '#f39c12';
+            } else if (score < 150) {
+                currentDifficulty = 'Hard';
+                difficultyDisplay.style.color = '#e74c3c';
+            } else {
+                currentDifficulty = 'Expert';
+                difficultyDisplay.style.color = '#8e44ad';
+            }
+            
+            difficultyDisplay.textContent = currentDifficulty;
+        }
+
+        // ==========================================
+        // GAME END FUNCTION
+        // ==========================================
+        
+        /**
+         * Ends the game when time runs out
+         * Stops all animations and displays final score
+         */
+        function endGame() {
+            // Set game over flag
+            gameOver = true;
+            
+            // Stop timer
+            clearInterval(timerIntervalId);
+            
+            // Stop target movement
+            cancelAnimationFrame(targetAnimationId);
+            
+            // Hide arrow if in flight
+            resetArrow();
+            
+            // Disable shoot button
+            shootButton.disabled = true;
+            
+            // Display game over message
+            finalScoreDisplay.textContent = score;
+            gameOverMessage.style.display = 'block';
+        }
+
+        // ==========================================
+        // RESTART GAME FUNCTION
+        // ==========================================
+        
+        /**
+         * Restarts the game cleanly
+         * Resets all variables and restarts animations
+         */
+        function restartGame() {
+            // Reset all game state variables
+            score = 0;
+            timeLeft = 60;
+            gameOver = false;
+            arrowInFlight = false;
+            targetSize = 80;
+            targetSpeedX = 2;
+            targetSpeedY = 1.5;
+            currentDifficulty = 'Easy';
+            
+            // Reset displays
+            scoreDisplay.textContent = '0';
+            timerDisplay.textContent = '60';
+            timerDisplay.parentElement.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+            difficultyDisplay.textContent = 'Easy';
+            difficultyDisplay.style.color = '#764ba2';
+            
+            // Hide game over message
+            gameOverMessage.style.display = 'none';
+            
+            // Enable shoot button
+            shootButton.disabled = false;
+            
+            // Reset arrow
+            resetArrow();
+            
+            // Reset target position
+            targetX = gameArea.offsetWidth / 2 - targetSize / 2;
+            targetY = gameArea.offsetHeight / 2 - targetSize / 2;
+            updateTargetPosition();
+            target.style.transform = 'scale(1)';
+            
+            // Clear any existing intervals/animations
+            clearInterval(timerIntervalId);
+            cancelAnimationFrame(targetAnimationId);
+            
+            // Restart game
+            moveTarget();
+            startTimer();
+        }
+
+        // ==========================================
+        // START THE GAME
+        // ==========================================
+        
+        // Initialize game when page loads
+        window.addEventListener('load', initializeGame);
+    </script>
+</body>
+</html>
