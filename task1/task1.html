@@ -1,21 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Character encoding set to UTF-8 for supporting special characters -->
   <meta charset="UTF-8">
+
+  <!-- Page title displayed in the browser tab -->
   <title>MeowMeow Gallery</title>
+
+  <!-- Makes the page responsive on all devices (mobile, tablet, desktop) -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Link to external CSS stylesheet for styling -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+<!-- ========== HEADER SECTION ========== -->
+<!-- Contains the brand logo and site title -->
 <header class="header">
   <div class="brand">
-    <img src="logos.png" class="logo">
-    <h1>MeowMeow Gallery</h1>
+    <img src="logos.png" class="logo"> <!-- Site logo image -->
+    <h1>MeowMeow Gallery</h1> <!-- Main heading / site name -->
   </div>
 </header>
 
+<!-- ========== NAVIGATION BAR ========== -->
+<!-- Top navigation with anchor links to page sections -->
 <nav class="topnav">
   <a href="#home">Home</a>
   <a href="#gallery">Gallery</a>
@@ -23,14 +34,19 @@
   <a href="#about">About</a>
 </nav>
 
+<!-- ========== HOME / WELCOME SECTION ========== -->
+<!-- Introductory section with a welcome message -->
 <section id="home" class="section welcome">
   <h2>Welcome to MeowMeow Gallery</h2>
   <p>Where creativity meets cute whiskers and artistic paws 🐾</p>
 </section>
 
+<!-- ========== GALLERY SECTION ========== -->
+<!-- Displays a grid of cat images -->
 <section id="gallery" class="section">
   <h2>Gallery</h2>
   <div class="gallery">
+    <!-- Each img tag loads a different cat image -->
     <img src="cat1.jpg">
     <img src="cat2.jpg">
     <img src="cat3.jpeg">
@@ -40,22 +56,29 @@
   </div>
 </section>
 
+<!-- ========== FEEDBACK SECTION ========== -->
+<!-- Contains a form for users to submit their feedback -->
 <section id="feedback" class="section">
   <h2>Feedback</h2>
 
   <div class="form-box">
     <form>
+      <!-- First name input field -->
       <label>First Name</label>
       <input type="text" placeholder="Enter name">
 
+      <!-- Last name input field -->
       <label>Last Name</label>
       <input type="text" placeholder="Enter surname">
 
+      <!-- Submit button to send the form -->
       <button>Submit</button>
     </form>
   </div>
 </section>
 
+<!-- ========== ABOUT SECTION ========== -->
+<!-- Provides information about the website -->
 <section id="about" class="section">
   <h2>About Us</h2>
   <p>
@@ -64,6 +87,8 @@
   </p>
 </section>
 
+<!-- ========== FOOTER ========== -->
+<!-- Bottom of the page with copyright info -->
 <footer>
   <p>© 2026 MeowMeow Gallery</p>
 </footer>
