@@ -1,0 +1,15 @@
+{
+  "name": "login-system-secure",
+  "version": "1.0.0",
+  "description": "Secure login system with bcrypt password hashing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mongoose": "^8.0.0"
+  }
+}
