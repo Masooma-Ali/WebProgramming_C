@@ -1,6 +1,6 @@
 const express = require('express');
 const session = require('express-session');
-const connectDB = require('./db');
+const connectDB = require('./Db');
 const User = require('./User');
 
 const app = express();
